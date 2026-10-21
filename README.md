@@ -29,3 +29,19 @@ Python-trained Naive Bayes exported to a 230 KB JS model; vanilla HTML/CSS/JS fr
 ```bash
 python3 -m http.server 8000
 ```
+
+---
+
+## 🐍 Python version (real ML backend) - `python-app/`
+
+The browser demo above is fully client-side. This folder is the **pro-grade version** with a real training pipeline on real data:
+
+TF-IDF + logistic regression on 5,574 real SMS (UCI). 98.7% accuracy, F1 0.95, with per-word explanations. Stack: Python, Streamlit, scikit-learn.
+
+```bash
+cd python-app
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Deploy free on **Hugging Face Spaces** (no card): create a Space, upload the `python-app/` folder - it ships Space-ready (`sdk` + `app_file` already set in its README).
