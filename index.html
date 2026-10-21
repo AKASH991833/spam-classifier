@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spam Shield - SMS & Email Spam Classifier</title>
+<meta name="description" content="Paste a message, get a spam probability with the exact words that drove it. Naive Bayes trained on 5,574 real SMS messages. Free, offline, no sign-up.">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0f2145">
+<link rel="stylesheet" href="design.css">
+<style>
+.cls-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+@media(max-width:900px){.cls-grid{grid-template-columns:1fr}}
+#input{min-height:150px;font-size:.97rem;line-height:1.7}
+.verdict{display:flex;align-items:center;gap:16px;padding:16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line)}
+.verdict .big{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+.gauge{flex:1;height:14px;border-radius:99px;background:var(--line);overflow:hidden;position:relative}
+.gauge i{display:block;height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.3,1)}
+.ev{display:flex;flex-direction:column;gap:7px}
+.ev-item{display:flex;align-items:center;gap:10px;font-size:.88rem}
+.ev-item .w{font-weight:700;min-width:90px;font-family:ui-monospace,monospace}
+.ev-item .bar{flex:1;height:9px;border-radius:99px;background:var(--line);overflow:hidden}
+.ev-item .bar i{display:block;height:100%}
+.ev-item .v{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:.78rem;min-width:52px;text-align:right}
+.metric-conf{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.86rem}
+.metric-conf div{background:var(--bg-soft);border:1px solid var(--line);border-radius:9px;padding:7px 10px;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<header class="app-header"><div class="header-inner">
+  <div class="brand"><span class="brand-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3 4 6v5c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6z"/><path d="m9 12 2 2 4-4.5"/></svg></span>Spam Shield</div>
+  <div class="header-spacer"></div>
+  <button class="icon-btn" onclick="toggleTheme()" title="Dark / light mode" aria-label="Toggle dark mode"><svg class="moon-i" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg><svg class="sun-i" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2v2.4M12 19.6V22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2 12h2.4M19.6 12H22M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></svg></button>
+</div></header>
+<main class="app-main">
+  <div class="hero">
+    <h1>Is that message <span class="accent-word">spam?</span></h1>
+    <p>Paste an SMS, WhatsApp forward or email. A Naive Bayes model trained on 5,574 real messages gives a probability and shows exactly which words pushed it toward spam.</p>
+  </div>
+  <div class="cls-grid">
+    <div>
+      <div class="card">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>Message to check</div>
+        <div style="height:12px"></div>
+        <textarea class="input" id="input" placeholder="Paste the message here…" spellcheck="false"></textarea>
+        <div style="height:12px"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="clsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Check message</button>
+          <button class="btn btn-ghost" id="spamEx">Try spam example</button>
+          <button class="btn btn-ghost" id="hamEx">Try real message</button>
+        </div>
+        <div style="height:14px"></div>
+        <div class="verdict" id="verdict" style="display:none">
+          <div class="big" id="verdictLabel"></div>
+          <div class="gauge"><i id="gaugeFill"></i></div>
+          <b id="verdictPct" style="font-variant-numeric:tabular-nums"></b>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Evidence</div>
+        <div class="card-sub">Words that moved the verdict most, with their log-odds pull.</div>
+        <div style="height:12px"></div>
+        <div class="ev" id="evidence"><div class="note">Check a message to see which words count for and against spam.</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>Model report card</div>
+        <div class="card-sub">Measured on 1,114 real messages the model never saw in training.</div>
+        <div style="height:12px"></div>
+        <div class="stat-grid">
+          <div class="stat"><b id="mAcc">-</b><span>Accuracy</span></div>
+          <div class="stat"><b id="mPrec">-</b><span>Precision</span></div>
+          <div class="stat"><b id="mRec">-</b><span>Recall</span></div>
+          <div class="stat"><b id="mVoc">-</b><span>Vocabulary</span></div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="metric-conf" id="confMatrix"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.7c0 1.6-2.4 2-2.4 3.3M12 16.6v.1"/></svg>How it works</div>
+        <div style="height:8px"></div>
+        <p style="font-size:.9rem;color:var(--ink-soft)">Multinomial Naive Bayes adds up the log-probability of every word under "spam" vs "ham" training messages, plus a class prior, then normalizes to a probability. Trained on the public SMS Spam Collection with an 80/20 split. <b>Honest limit:</b> it's a text-only model trained on SMS English, so new scam wording, URLs and sender tricks can slip past it. Treat a "not spam" as no red flags found, not a guarantee.</p>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="app-footer">Runs fully offline · model trained on the public SMS Spam Collection dataset · <a href="https://github.com/AKASH991833/spam-classifier" rel="noopener">Source on GitHub</a></footer>
+<script src="core.js"></script>
+<script src="model.js"></script>
+<script src="examples.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
