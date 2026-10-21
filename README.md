@@ -4,7 +4,7 @@ Paste an SMS, forward or email and get a spam probability with the exact words t
 
 **Live demo: https://akash991833.github.io/spam-classifier/**
 
-![Verdict with evidence](docs/screenshot-desktop.png)
+![Verdict with evidence](screenshots/desktop-light.png)
 
 ## Features
 
@@ -14,7 +14,7 @@ Paste an SMS, forward or email and get a spam probability with the exact words t
 - **Vocabulary transparency** - tells you how many of your words the model actually knows.
 - **Dark and light mode**, mobile friendly, installable PWA.
 
-![Mobile](docs/screenshot-mobile.png)
+![Mobile](screenshots/mobile-light.png)
 
 ## Honest limits
 
