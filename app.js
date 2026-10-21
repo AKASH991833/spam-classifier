@@ -22,7 +22,7 @@ function render(){
   const pct=Math.round(p*100);
   const v=$('#verdict');v.style.display='flex';
   const spam=p>=0.5;
-  $('#verdictLabel').innerHTML=spam?'🚨 Likely spam':'✅ Looks safe';
+  $('#verdictLabel').innerHTML='<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+(spam?'var(--bad)':'var(--ok)')+';margin-right:4px"></span>'+(spam?'Likely spam':'Looks safe');
   $('#verdictLabel').style.color=spam?'var(--bad)':'var(--ok)';
   const gf=$('#gaugeFill');
   gf.style.width=Math.max(3,pct)+'%';
